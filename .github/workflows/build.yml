@@ -1,0 +1,67 @@
+# Compile Hn screen ! (.3dsx + .cia) à chaque envoi sur main.
+# Les fichiers sont à récupérer dans l'onglet Actions (artefact « hn-screen »).
+name: Hn screen !
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dépendances
+        run: |
+          PKGS="3ds-curl 3ds-mbedtls 3ds-zlib"
+          if dkp-pacman -Q $PKGS; then exit 0; fi
+          for i in 1 2 3; do
+            dkp-pacman -Sy --noconfirm --needed $PKGS && exit 0
+            echo "Serveur devkitPro indisponible, nouvel essai dans 30 s..."; sleep 30
+          done
+          exit 1
+
+      - name: Outils CIA et certificats
+        run: |
+          curl -fsSL -o /tmp/makerom.zip https://github.com/3DSGuy/Project_CTR/releases/download/makerom-v0.18.4/makerom-v0.18.4-ubuntu_x86_64.zip
+          command -v unzip >/dev/null || (apt-get update -qq && apt-get install -y -qq unzip)
+          mkdir -p /tmp/bin && cd /tmp/bin && unzip -o /tmp/makerom.zip && chmod +x makerom
+          curl -fsSL -o "$GITHUB_WORKSPACE/romfs/cacert.pem" https://curl.se/ca/cacert.pem
+
+      - name: Compilation
+        run: |
+          export PATH=/tmp/bin:$PATH
+          make -j2 BUILD_NUMBER=$((${{ github.run_number }} + 100))
+          make cia BUILD_NUMBER=$((${{ github.run_number }} + 100))
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hn-screen
+          path: |
+            hn-screen.cia
+            hn-screen.3dsx
+
+      # Copie aussi le CIA sur la branche « builds » : lien direct permanent
+      # https://raw.githubusercontent.com/Heivoli-dev/hn-screen/builds/hn-screen.cia
+      # (installable avec FBI > Remote Install > Scan QR code).
+      - name: Branche builds
+        if: github.event_name != 'pull_request'
+        run: |
+          command -v git >/dev/null || (apt-get update -qq && apt-get install -y -qq git)
+          mkdir /tmp/out && cp hn-screen.cia hn-screen.3dsx /tmp/out/
+          V=$(grep -E '^VERSION_(MAJOR|MINOR|MICRO)' Makefile | awk '{print $3}' | paste -sd. -)
+          printf 'build=%s\nversion=%s\n' "$((${{ github.run_number }} + 100))" "$V" > /tmp/out/version.txt
+          cd /tmp/out
+          git init -q -b builds
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "Hn screen ! $GITHUB_SHA"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" builds

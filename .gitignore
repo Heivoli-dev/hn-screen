@@ -1,0 +1,16 @@
+build/
+*.3dsx
+*.elf
+*.smdh
+*.cia
+*.zip
+romfs/cacert.pem
+romfs/gfx/
+tools/bin/
+.DS_Store
+
+banner/.tools/
+banner/*.cgfx
+romfs/cacert.pem
+romfs/gfx/
+__pycache__/
