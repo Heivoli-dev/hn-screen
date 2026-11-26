@@ -29,7 +29,7 @@ ICON		:=	icon.png
 # Version (affichée dans le menu, utilisée pour les mises à jour et le CIA)
 VERSION_MAJOR	:=	1
 VERSION_MINOR	:=	0
-VERSION_MICRO	:=	0
+VERSION_MICRO := 1
 VERSION		:=	$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_MICRO)
 # Numéro de build (donné par GitHub Actions) : sert aux mises à jour automatiques.
 BUILD_NUMBER	?=	0

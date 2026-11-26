@@ -519,7 +519,7 @@ static void draw_bottom_share(void)
             ui_text_wrap(tx, 44, 0.42f, C_TXT, tw, "Scanne le QR code avec ton téléphone ou ton PC.");
             ui_text(tx, 100, 0.38f, C_TXT2, "Ou ouvre :");
             ui_text_wrap(tx, 114, 0.38f, C_CYAN_DK, tw, share_label());
-            ui_text_wrap(tx, 160, 0.36f, C_TXT2, tw, "Lien valable 24 h.");
+            ui_text_wrap(tx, 160, 0.36f, C_TXT2, tw, "Lien à usage unique, 10 min max.");
         } else {
             ui_text_wrap(tx, 44, 0.42f, C_TXT, tw, "Même Wi-Fi que la console. Garde l'appli ouverte.");
             ui_text(tx, 100, 0.38f, C_TXT2, "Ou ouvre :");
